@@ -68,14 +68,21 @@ def process_images(input_dir, output_dir, model):
             _, predicted = torch.max(outputs, 1)
             animal_category = categories[predicted.item()]
 
+        # Stampa per verificare la categoria predetta
+        print(f"Immagine: {image_name}, Categoria Predetta: {animal_category}")
+
         # Applicare il filtro appropriato
         if animal_category == 'dog':
+            print("Applico filtro cane.")
             modified_image = add_dog_filter(image)
         elif animal_category == 'cat':
+            print("Applico filtro gatto.")
             modified_image = add_cat_filter(image)
         elif animal_category == 'bird':
+            print("Applico filtro uccello.")
             modified_image = add_bird_filter(image)
         else:
+            print("Nessun filtro applicato.")
             modified_image = image  # Nessun filtro applicato
 
         # Salvare l'immagine modificata

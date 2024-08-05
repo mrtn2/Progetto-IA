@@ -33,6 +33,8 @@ train_transforms = transforms.Compose([
 # Creazione dei dataset e dataloader
 train_dataset = datasets.ImageFolder(root=data_dir, transform=train_transforms)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+# Inizio dell'addestramento
+print("Inizio dell'addestramento del modello...")
 
 # Addestramento
 for epoch in range(10):  # Numero di epoche

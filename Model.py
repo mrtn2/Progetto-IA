@@ -16,7 +16,7 @@ class AnimalNetwork(nn.Module):
         return self.model(x)
 
 # Configurazione
-data_dir = 'dogImages/train'
+data_dir = 'images/train'
 model = AnimalNetwork()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)

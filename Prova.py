@@ -83,7 +83,7 @@ def process_images(input_dir, output_dir, model):
         modified_image.save(modified_image_path)
 
 # Esecuzione della funzione di elaborazione
-input_dir = 'dogImages/test'
-output_dir = 'dogImages/valid'
+input_dir = 'images/test'
+output_dir = 'images/valid'
 
 process_images(input_dir, output_dir, model)

@@ -9,8 +9,10 @@ import torchvision.models as models
 class AnimalNetwork(nn.Module):
     def __init__(self):
         super(AnimalNetwork, self).__init__()
-        self.model = models.resnet18(weights=None)
+        #self.model = models.resnet18(weights=None)
+        self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         self.model.fc = nn.Linear(self.model.fc.in_features, 3)  # Numero di classi
+
 
     def forward(self, x):
         return self.model(x)
@@ -32,13 +34,24 @@ except Exception as e:
     exit()
 
 # Trasformazioni per le immagini
-transform = transforms.Compose([
+""" transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
+]) """
+
+transform = transforms.Compose([
+    transforms.RandomResizedCrop(224),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
+
+
 
 # Definizione dei filtri
 def add_dog_filter(image):
@@ -55,7 +68,7 @@ def process_images(input_dir, output_dir, model):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    categories = ['dog', 'cat', 'bird']
+    categories = ['bird', 'cat', 'dog']
 
     for image_name in os.listdir(input_dir):
         image_path = os.path.join(input_dir, image_name)

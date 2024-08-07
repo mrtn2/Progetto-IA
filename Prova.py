@@ -4,6 +4,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import os
 import torchvision.models as models
+import random
 
 # Definizione del modello
 class AnimalNetwork(nn.Module):
@@ -69,6 +70,14 @@ def process_images(input_dir, output_dir, model):
         os.makedirs(output_dir)
 
     categories = ['bird', 'cat', 'dog']
+
+    image_names = os.listdir(input_dir)
+    print("Ordine originale delle immagini:")
+    print(image_names)
+
+    random.shuffle(image_names)
+    print("Ordine dopo shuffle:")
+    print(image_names)
 
     for image_name in os.listdir(input_dir):
         image_path = os.path.join(input_dir, image_name)

@@ -53,8 +53,6 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-
-
 # Definizione dei filtri
 def add_dog_filter(image):
     return image.transpose(Image.FLIP_TOP_BOTTOM)  # Ruota l'immagine sottosopra
@@ -63,21 +61,32 @@ def add_cat_filter(image):
     return image.convert('L').convert('RGB')  # Converti in bianco e nero
 
 def add_bird_filter(image):
-    #return image.transpose(Image.FLIP_LEFT_RIGHT)
     return ImageOps.invert(image.convert('RGB'))  
 
-
+"""
+Funzione che gestisce l'eliminazione e svuotamento della cartella "valid" nel momento dell'esecuzione del programma.
+Inoltre, se la cartella non esiste, viene creata.
+"""
 def clear_output_directory(output_dir):
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)  # Rimuove completamente la cartella e il suo contenuto
     os.makedirs(output_dir)  # Ricrea la cartella vuota
 
+"""
+Funzione che crea le sottocartelle per ciascuna categoria se non esistono già.
+"""
+def create_category_folders(base_dir, categories):
+    for category in categories:
+        category_path = os.path.join(base_dir, category)
+        if not os.path.exists(category_path):
+            os.makedirs(category_path)
 
 # Funzione per processare le immagini
 def process_images(input_dir, output_dir, model):
     clear_output_directory(output_dir)
     
     categories = ['bird', 'cat', 'dog']
+    create_category_folders(output_dir, categories)
 
     image_names = os.listdir(input_dir)
     print("Ordine originale delle immagini:")
@@ -94,7 +103,6 @@ def process_images(input_dir, output_dir, model):
         # Debug: Verifica il numero di canali
         print(f"Numero di canali prima della trasformazione: {len(image.getbands())}")
 
-        
         image_tensor = transform(image).unsqueeze(0)
 
         # Classificare l'immagine
@@ -121,11 +129,13 @@ def process_images(input_dir, output_dir, model):
             modified_image = image  # Nessun filtro applicato
 
         # Salvare l'immagine modificata
-        modified_image_path = os.path.join(output_dir, image_name)
+        category_folder = os.path.join(output_dir, animal_category)
+        modified_image_path = os.path.join(category_folder, image_name)
+        
         modified_image.save(modified_image_path)
 
 # Esecuzione della funzione di elaborazione
-input_dir = 'images/test/animal'
+input_dir = 'images/test/animals'
 output_dir = 'images/valid'
 
 process_images(input_dir, output_dir, model)

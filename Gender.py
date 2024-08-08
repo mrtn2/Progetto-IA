@@ -1,3 +1,4 @@
+import shutil
 from PIL import Image
 import torch
 import torchvision.transforms as transforms
@@ -47,12 +48,36 @@ def apply_color_filter(image, gender):
     image = Image.blend(image, color_filter, alpha=0.5)
     return image
 
+"""
+Funzione che gestisce l'eliminazione e svuotamento della cartella "valid" nel momento dell'esecuzione del programma.
+Inoltre, se la cartella non esiste, viene creata.
+"""
+def clear_output_directory(output_dir):
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)  # Rimuove completamente la cartella e il suo contenuto
+    os.makedirs(output_dir)  # Ricrea la cartella vuota
+
+
+"""
+Funzione che crea le sottocartelle per ciascuna categoria se non esistono già.
+"""
+def create_category_folders(base_dir, categories):
+    for category in categories:
+        category_path = os.path.join(base_dir, category)
+        if not os.path.exists(category_path):
+            os.makedirs(category_path)
+
 # Funzione per processare le immagini
 def process_images(input_dir, output_dir, model):
+
+    clear_output_directory(output_dir)
+
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     categories = ['female', 'male']
+    create_category_folders(output_dir, categories)
+    
     image_names = os.listdir(input_dir)
     data = {"Name": [], "Gender": []}
 
@@ -72,7 +97,11 @@ def process_images(input_dir, output_dir, model):
 
         # Applicare il filtro colorato
         filtered_image = apply_color_filter(image, gender_category)
-        filtered_image.save(os.path.join(output_dir, f"filtered_{image_name}"))
+
+        output_path = os.path.join(output_dir, gender_category, f"filtered_{image_name}")
+        filtered_image.save(output_path)
+
+        #filtered_image.save(os.path.join(output_dir, f"filtered_{image_name}"))
 
     df = pd.DataFrame(data)
     print(df)

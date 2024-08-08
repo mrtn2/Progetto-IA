@@ -6,12 +6,14 @@ from torchvision import datasets, transforms
 import torch.nn as nn
 import os
 
-# Definizione del modello per animali
+"""
+Model implementation for animals 
+"""
 class AnimalNetwork(nn.Module):
     def __init__(self):
         super(AnimalNetwork, self).__init__()
         self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        self.model.fc = nn.Linear(self.model.fc.in_features, 3)  # Tre classi: bird, cat, dog
+        self.model.fc = nn.Linear(self.model.fc.in_features, 3)  # Three classes: bird, cat, dog
 
     def forward(self, x):
         return self.model(x)
@@ -21,7 +23,7 @@ class PeopleNetwork(nn.Module):
     def __init__(self):
         super(PeopleNetwork, self).__init__()
         self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        self.model.fc = nn.Linear(self.model.fc.in_features, 2)  # Due classi: male, female
+        self.model.fc = nn.Linear(self.model.fc.in_features, 2)  # Two classes: male, female
 
     def forward(self, x):
         return self.model(x)
@@ -71,6 +73,7 @@ def train_and_save_model(model, data_dir, model_name, num_classes):
     torch.save(model.state_dict(), model_name)
     print(f"Modello salvato come '{model_name}'")
 
-# Configurazione e addestramento dei modelli
-train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
-train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)
+if __name__ == "__main__":
+    # Configurazione e addestramento dei modelli
+    train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
+    train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)

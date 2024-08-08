@@ -5,12 +5,13 @@ import torch.nn as nn
 import os
 import torchvision.models as models
 import random
+from PIL import ImageOps
+import shutil
 
 # Definizione del modello
 class AnimalNetwork(nn.Module):
     def __init__(self):
         super(AnimalNetwork, self).__init__()
-        #self.model = models.resnet18(weights=None)
         self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         self.model.fc = nn.Linear(self.model.fc.in_features, 3)  # Numero di classi
 
@@ -62,13 +63,20 @@ def add_cat_filter(image):
     return image.convert('L').convert('RGB')  # Converti in bianco e nero
 
 def add_bird_filter(image):
-    return image.transpose(Image.FLIP_LEFT_RIGHT)  # Riflette orizzontalmente
+    #return image.transpose(Image.FLIP_LEFT_RIGHT)
+    return ImageOps.invert(image.convert('RGB'))  
+
+
+def clear_output_directory(output_dir):
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)  # Rimuove completamente la cartella e il suo contenuto
+    os.makedirs(output_dir)  # Ricrea la cartella vuota
+
 
 # Funzione per processare le immagini
 def process_images(input_dir, output_dir, model):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
+    clear_output_directory(output_dir)
+    
     categories = ['bird', 'cat', 'dog']
 
     image_names = os.listdir(input_dir)
@@ -79,9 +87,14 @@ def process_images(input_dir, output_dir, model):
     print("Ordine dopo shuffle:")
     print(image_names)
 
-    for image_name in os.listdir(input_dir):
+    for image_name in image_names:
         image_path = os.path.join(input_dir, image_name)
-        image = Image.open(image_path)#.convert("RGB")
+        image = Image.open(image_path).convert('RGB')
+
+        # Debug: Verifica il numero di canali
+        print(f"Numero di canali prima della trasformazione: {len(image.getbands())}")
+
+        
         image_tensor = transform(image).unsqueeze(0)
 
         # Classificare l'immagine

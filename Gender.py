@@ -48,19 +48,18 @@ def apply_color_filter(image, gender):
     image = Image.blend(image, color_filter, alpha=0.5)
     return image
 
-"""
-Funzione che gestisce l'eliminazione e svuotamento della cartella "valid" nel momento dell'esecuzione del programma.
-Inoltre, se la cartella non esiste, viene creata.
-"""
-def clear_output_directory(output_dir):
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)  # Rimuove completamente la cartella e il suo contenuto
-    os.makedirs(output_dir)  # Ricrea la cartella vuota
+# Funzione che gestisce l'eliminazione selettiva delle cartelle
+def clear_output_directory(output_dir, categories_to_clear):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
+    for category in categories_to_clear:
+        category_path = os.path.join(output_dir, category)
+        if os.path.exists(category_path):
+            shutil.rmtree(category_path)  # Rimuove la cartella specificata e il suo contenuto
+        os.makedirs(category_path)  # Ricrea la cartella vuota
 
-"""
-Funzione che crea le sottocartelle per ciascuna categoria se non esistono già.
-"""
+# Funzione per creare le sottocartelle se non esistono già
 def create_category_folders(base_dir, categories):
     for category in categories:
         category_path = os.path.join(base_dir, category)
@@ -70,17 +69,12 @@ def create_category_folders(base_dir, categories):
 # Funzione per processare le immagini
 def process_images(input_dir, output_dir, model):
 
-    clear_output_directory(output_dir)
-
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
     categories = ['female', 'male']
-    create_category_folders(output_dir, categories)
-    
+    clear_output_directory(output_dir, categories)  # Passa solo le categorie relative a gender
+
     image_names = os.listdir(input_dir)
     data = {"Name": [], "Gender": []}
-
+    
     for image_name in image_names:
         image_path = os.path.join(input_dir, image_name)
         image = Image.open(image_path).convert('RGB')
@@ -91,23 +85,21 @@ def process_images(input_dir, output_dir, model):
             _, predicted = torch.max(outputs, 1)
             gender_category = categories[predicted.item()]
 
-        print(f"Immagine: {image_name}, Genere Predetto: {gender_category}")
-        data["Name"].append(image_name)
-        data["Gender"].append(gender_category)
-
-        # Applicare il filtro colorato
+        # Applica il filtro colorato
         filtered_image = apply_color_filter(image, gender_category)
 
+        # Salva l'immagine modificata nella rispettiva cartella
         output_path = os.path.join(output_dir, gender_category, f"filtered_{image_name}")
         filtered_image.save(output_path)
 
-        #filtered_image.save(os.path.join(output_dir, f"filtered_{image_name}"))
+        data["Name"].append(image_name)
+        data["Gender"].append(gender_category)
 
     df = pd.DataFrame(data)
     print(df)
-    #df.to_csv(os.path.join(output_dir, 'results.csv'), index=False) #per salvare output in un csv
+    # df.to_csv(os.path.join(output_dir, 'results.csv'), index=False) # Salva i risultati in un CSV se necessario
 
 # Esecuzione della funzione di elaborazione
 input_dir = 'images/test/people'
-output_dir = 'images/valid'
+output_dir = 'images/valid/people'
 process_images(input_dir, output_dir, model)

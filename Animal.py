@@ -15,7 +15,6 @@ class AnimalNetwork(nn.Module):
         self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
         self.model.fc = nn.Linear(self.model.fc.in_features, 3)  # Numero di classi
 
-
     def forward(self, x):
         return self.model(x)
 
@@ -36,14 +35,6 @@ except Exception as e:
     exit()
 
 # Trasformazioni per le immagini
-""" transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225])
-]) """
-
 transform = transforms.Compose([
     transforms.RandomResizedCrop(224),
     transforms.RandomHorizontalFlip(),
@@ -63,18 +54,18 @@ def add_cat_filter(image):
 def add_bird_filter(image):
     return ImageOps.invert(image.convert('RGB'))  
 
-"""
-Funzione che gestisce l'eliminazione e svuotamento della cartella "valid" nel momento dell'esecuzione del programma.
-Inoltre, se la cartella non esiste, viene creata.
-"""
-def clear_output_directory(output_dir):
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)  # Rimuove completamente la cartella e il suo contenuto
-    os.makedirs(output_dir)  # Ricrea la cartella vuota
+# Funzione che gestisce l'eliminazione selettiva delle cartelle specifiche per gli animali
+def clear_output_directory(output_dir, categories_to_clear):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-"""
-Funzione che crea le sottocartelle per ciascuna categoria se non esistono già.
-"""
+    for category in categories_to_clear:
+        category_path = os.path.join(output_dir, category)
+        if os.path.exists(category_path):
+            shutil.rmtree(category_path)  # Rimuove la cartella specificata e il suo contenuto
+        os.makedirs(category_path)  # Ricrea la cartella vuota
+
+# Funzione che crea le sottocartelle per ciascuna categoria se non esistono già
 def create_category_folders(base_dir, categories):
     for category in categories:
         category_path = os.path.join(base_dir, category)
@@ -83,9 +74,11 @@ def create_category_folders(base_dir, categories):
 
 # Funzione per processare le immagini
 def process_images(input_dir, output_dir, model):
-    clear_output_directory(output_dir)
-    
     categories = ['bird', 'cat', 'dog']
+    
+    # Elimina solo le cartelle specifiche per gli animali
+    clear_output_directory(output_dir, categories)
+    
     create_category_folders(output_dir, categories)
 
     image_names = os.listdir(input_dir)
@@ -136,6 +129,6 @@ def process_images(input_dir, output_dir, model):
 
 # Esecuzione della funzione di elaborazione
 input_dir = 'images/test/animals'
-output_dir = 'images/valid'
+output_dir = 'images/valid/animals'
 
 process_images(input_dir, output_dir, model)

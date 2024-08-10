@@ -1,14 +1,14 @@
+import shutil
 from PIL import Image
 import torch
 import torchvision.transforms as transforms
 import torch.nn as nn
 import os
+import pandas as pd
 import torchvision.models as models
+import matplotlib.pyplot as plt
 import random
 from PIL import ImageOps
-import shutil
-import matplotlib.pyplot as plt
-import pandas as pd
 
 # Definizione del modello
 class AnimalNetwork(nn.Module):
@@ -121,20 +121,25 @@ def process_images(input_dir, output_dir, model, num_images=100):
         
         modified_image.save(modified_image_path)
 
-        data["Name"].append(image_name)
+        # Rimuovere l'estensione dal nome dell'immagine per il grafico
+        image_name_without_ext = os.path.splitext(image_name)[0]
+
+        data["Name"].append(image_name_without_ext)
         data["Category"].append(animal_category)
         data["Confidence"].append(confidence.item())
 
     df = pd.DataFrame(data)
     print(df)
 
-    # Visualizzazione della distribuzione delle confidenze
-    plt.figure(figsize=(10, 6))
-    plt.hist(confidences, bins=20, color='green', edgecolor='black', alpha=0.7)
-    plt.xlabel('Confidenza')
-    plt.ylabel('Numero di Immagini')
-    plt.title('Distribuzione delle Confidenze delle Predizioni (Animals)')
+    # Visualizzazione delle confidenze per ogni immagine
+    plt.figure(figsize=(10, 6))  # Ridotto la dimensione della finestra del plot
+    plt.bar(df["Name"], df["Confidence"], color='green', edgecolor='black', alpha=0.7)
+    plt.xlabel('Nome Immagine', fontsize=10)  # Ridotto la grandezza del testo dell'asse x
+    plt.ylabel('Confidenza', fontsize=10)  # Ridotto la grandezza del testo dell'asse y
+    plt.title('Confidenza della Predizione per Ogni Immagine', fontsize=12)  # Ridotto la grandezza del titolo
+    plt.xticks(rotation=45, ha='right', fontsize=8)  # Ruota le etichette dell'asse x di 45 gradi e riduci la grandezza del testo
     plt.grid(True)
+    plt.tight_layout()  # Per assicurare che le etichette non vengano tagliate
     plt.show()
 
 # Esecuzione della funzione di elaborazione

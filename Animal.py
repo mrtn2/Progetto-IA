@@ -7,6 +7,8 @@ import torchvision.models as models
 import random
 from PIL import ImageOps
 import shutil
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # Definizione del modello
 class AnimalNetwork(nn.Module):
@@ -52,7 +54,7 @@ def add_cat_filter(image):
     return image.convert('L').convert('RGB')  # Converti in bianco e nero
 
 def add_bird_filter(image):
-    return ImageOps.invert(image.convert('RGB'))  
+    return ImageOps.invert(image.convert('RGB'))
 
 # Funzione che gestisce l'eliminazione selettiva delle cartelle specifiche per gli animali
 def clear_output_directory(output_dir, categories_to_clear):
@@ -72,53 +74,45 @@ def create_category_folders(base_dir, categories):
         if not os.path.exists(category_path):
             os.makedirs(category_path)
 
+# Funzione per selezionare un campione casuale di immagini
+def get_random_images(image_list, num_images):
+    return random.sample(image_list, min(num_images, len(image_list)))
+
 # Funzione per processare le immagini
-def process_images(input_dir, output_dir, model):
+def process_images(input_dir, output_dir, model, num_images=100):
     categories = ['bird', 'cat', 'dog']
     
-    # Elimina solo le cartelle specifiche per gli animali
     clear_output_directory(output_dir, categories)
-    
     create_category_folders(output_dir, categories)
 
     image_names = os.listdir(input_dir)
-    print("Ordine originale delle immagini:")
-    print(image_names)
+    random_images = get_random_images(image_names, num_images)
 
-    random.shuffle(image_names)
-    print("Ordine dopo shuffle:")
-    print(image_names)
+    data = {"Name": [], "Category": [], "Confidence": []}
+    confidences = []
 
-    for image_name in image_names:
+    for image_name in random_images:
         image_path = os.path.join(input_dir, image_name)
         image = Image.open(image_path).convert('RGB')
 
-        # Debug: Verifica il numero di canali
-        print(f"Numero di canali prima della trasformazione: {len(image.getbands())}")
-
         image_tensor = transform(image).unsqueeze(0)
 
-        # Classificare l'immagine
         with torch.no_grad():
             outputs = model(image_tensor)
-            _, predicted = torch.max(outputs, 1)
+            probabilities = torch.nn.functional.softmax(outputs, dim=1)
+            confidence, predicted = torch.max(probabilities, 1)
             animal_category = categories[predicted.item()]
 
-        # Stampa per verificare la categoria predetta
-        print(f"Immagine: {image_name}, Categoria Predetta: {animal_category}")
+            confidences.append(confidence.item())
 
         # Applicare il filtro appropriato
         if animal_category == 'dog':
-            print("Applico filtro cane.")
             modified_image = add_dog_filter(image)
         elif animal_category == 'cat':
-            print("Applico filtro gatto.")
             modified_image = add_cat_filter(image)
         elif animal_category == 'bird':
-            print("Applico filtro uccello.")
             modified_image = add_bird_filter(image)
         else:
-            print("Nessun filtro applicato.")
             modified_image = image  # Nessun filtro applicato
 
         # Salvare l'immagine modificata
@@ -127,8 +121,24 @@ def process_images(input_dir, output_dir, model):
         
         modified_image.save(modified_image_path)
 
+        data["Name"].append(image_name)
+        data["Category"].append(animal_category)
+        data["Confidence"].append(confidence.item())
+
+    df = pd.DataFrame(data)
+    print(df)
+
+    # Visualizzazione della distribuzione delle confidenze
+    plt.figure(figsize=(10, 6))
+    plt.hist(confidences, bins=20, color='green', edgecolor='black', alpha=0.7)
+    plt.xlabel('Confidenza')
+    plt.ylabel('Numero di Immagini')
+    plt.title('Distribuzione delle Confidenze delle Predizioni (Animals)')
+    plt.grid(True)
+    plt.show()
+
 # Esecuzione della funzione di elaborazione
 input_dir = 'images/test/animals'
 output_dir = 'images/valid/animals'
 
-process_images(input_dir, output_dir, model)
+process_images(input_dir, output_dir, model, num_images=100)

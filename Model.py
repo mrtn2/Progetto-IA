@@ -6,6 +6,7 @@ from torchvision import datasets, transforms
 import torch.nn as nn
 import os
 import subprocess  # per automatizzazione di script in sequenza
+import matplotlib.pyplot as plt  # per il grafico delle loss
 
 """
 Model implementation for animals 
@@ -57,6 +58,8 @@ def train_and_save_model(model, data_dir, model_name, num_classes):
 
     print(f"Inizio dell'addestramento del modello {model_name}...")
 
+    losses = []  # Lista per memorizzare i valori di loss
+
     for epoch in range(10):  # Numero di epoche
         running_loss = 0.0
         for images, labels in train_loader:
@@ -68,17 +71,32 @@ def train_and_save_model(model, data_dir, model_name, num_classes):
             running_loss += loss.item()
         
         scheduler.step()
-        print(f"Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}")
+        epoch_loss = running_loss / len(train_loader)
+        losses.append(epoch_loss)
+        print(f"Epoch {epoch+1}, Loss: {epoch_loss}")
 
     # Salvataggio del modello
     torch.save(model.state_dict(), model_name)
     print(f"Modello salvato come '{model_name}'")
 
+    return losses  # Restituisce la lista delle loss per ogni epoca
+
 if __name__ == "__main__":
-    # Configurazione e addestramento dei modelli
-    train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
-    train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)
+    # Addestramento e salvataggio dei modelli
+    animal_losses = train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
+    people_losses = train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)
     
+    # Creazione del grafico per le loss
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, 11), animal_losses, label='AnimalNetwork Loss')
+    plt.plot(range(1, 11), people_losses, label='PeopleNetwork Loss')
+    plt.xlabel('Epoca')
+    plt.ylabel('Loss')
+    plt.title('Andamento delle Loss durante le Epoche')
+    plt.legend()
+    plt.savefig('training_loss_plot.png')  # Salva il grafico come immagine
+    plt.show()  # Mostra il grafico
+
     # Esecuzione automatica dello script animal.py
     print("Esecuzione di animal.py...")
     subprocess.run(['python', 'Animal.py'])

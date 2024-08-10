@@ -92,20 +92,25 @@ def process_images(input_dir, output_dir, model):
         output_path = os.path.join(output_dir, gender_category, f"filtered_{image_name}")
         filtered_image.save(output_path)
 
-        data["Name"].append(image_name)
+        # Rimuovere l'estensione dal nome dell'immagine per il grafico
+        image_name_without_ext = os.path.splitext(image_name)[0]
+
+        data["Name"].append(image_name_without_ext)
         data["Gender"].append(gender_category)
         data["Confidence"].append(confidence.item())
 
     df = pd.DataFrame(data)
     print(df)
 
-    # Visualizzazione della distribuzione delle confidenze
-    plt.figure(figsize=(10, 6))
-    plt.hist(confidences, bins=20, color='blue', edgecolor='black', alpha=0.7)
-    plt.xlabel('Confidenza')
-    plt.ylabel('Numero di Immagini')
-    plt.title('Distribuzione delle Confidenze delle Predizioni (Gender)')
+    # Visualizzazione della confidenza per ogni immagine
+    plt.figure(figsize=(10, 6))  # Ridotto la dimensione della finestra del plot
+    plt.bar(df["Name"], df["Confidence"], color='blue', edgecolor='black', alpha=0.7)
+    plt.xlabel('Nome Immagine', fontsize=10)  # Ridotto la grandezza del testo dell'asse x
+    plt.ylabel('Confidenza', fontsize=10)  # Ridotto la grandezza del testo dell'asse y
+    plt.title('Confidenza della Predizione per Ogni Immagine', fontsize=12)  # Ridotto la grandezza del titolo
+    plt.xticks(rotation=45, ha='right', fontsize=8)  # Ruota le etichette dell'asse x di 45 gradi e riduci la grandezza del testo
     plt.grid(True)
+    plt.tight_layout()  # Per assicurare che le etichette non vengano tagliate
     plt.show()
 
 # Esecuzione della funzione di elaborazione

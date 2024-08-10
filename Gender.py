@@ -6,6 +6,7 @@ import torch.nn as nn
 import os
 import pandas as pd
 import torchvision.models as models
+import matplotlib.pyplot as plt
 
 # Definizione del modello per persone
 class PeopleNetwork(nn.Module):
@@ -36,15 +37,12 @@ transform = get_transforms()
 # Funzione per applicare il filtro colorato
 def apply_color_filter(image, gender):
     if gender == 'male':
-        # Filtro azzurro
         color_filter = Image.new('RGB', image.size, color='lightblue')
     elif gender == 'female':
-        # Filtro rosa chiaro
         color_filter = Image.new('RGB', image.size, color='lightpink')
     else:
         return image
 
-    # Sovrapponi il filtro all'immagine
     image = Image.blend(image, color_filter, alpha=0.5)
     return image
 
@@ -68,13 +66,14 @@ def create_category_folders(base_dir, categories):
 
 # Funzione per processare le immagini
 def process_images(input_dir, output_dir, model):
-
     categories = ['female', 'male']
-    clear_output_directory(output_dir, categories)  # Passa solo le categorie relative a gender
+    clear_output_directory(output_dir, categories)
 
     image_names = os.listdir(input_dir)
-    data = {"Name": [], "Gender": []}
-    
+    data = {"Name": [], "Gender": [], "Confidence": []}
+
+    confidences = []
+
     for image_name in image_names:
         image_path = os.path.join(input_dir, image_name)
         image = Image.open(image_path).convert('RGB')
@@ -82,22 +81,32 @@ def process_images(input_dir, output_dir, model):
 
         with torch.no_grad():
             outputs = model(image_tensor)
-            _, predicted = torch.max(outputs, 1)
+            probabilities = torch.nn.functional.softmax(outputs, dim=1)
+            confidence, predicted = torch.max(probabilities, 1)
             gender_category = categories[predicted.item()]
 
-        # Applica il filtro colorato
+            confidences.append(confidence.item())
+
         filtered_image = apply_color_filter(image, gender_category)
 
-        # Salva l'immagine modificata nella rispettiva cartella
         output_path = os.path.join(output_dir, gender_category, f"filtered_{image_name}")
         filtered_image.save(output_path)
 
         data["Name"].append(image_name)
         data["Gender"].append(gender_category)
+        data["Confidence"].append(confidence.item())
 
     df = pd.DataFrame(data)
     print(df)
-    # df.to_csv(os.path.join(output_dir, 'results.csv'), index=False) # Salva i risultati in un CSV se necessario
+
+    # Visualizzazione della distribuzione delle confidenze
+    plt.figure(figsize=(10, 6))
+    plt.hist(confidences, bins=20, color='blue', edgecolor='black', alpha=0.7)
+    plt.xlabel('Confidenza')
+    plt.ylabel('Numero di Immagini')
+    plt.title('Distribuzione delle Confidenze delle Predizioni (Gender)')
+    plt.grid(True)
+    plt.show()
 
 # Esecuzione della funzione di elaborazione
 input_dir = 'images/test/people'

@@ -9,6 +9,7 @@ import torchvision.models as models
 import matplotlib.pyplot as plt
 import random
 from PIL import ImageOps
+import json
 
 # Definizione del modello
 class AnimalNetwork(nn.Module):
@@ -45,6 +46,10 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
+
+# Carica la configurazione dal file JSON
+with open('config.json', 'r') as f:
+    config = json.load(f)
 
 # Definizione dei filtri
 def add_dog_filter(image):
@@ -143,7 +148,7 @@ def process_images(input_dir, output_dir, model, num_images=100):
     plt.show()
 
 # Esecuzione della funzione di elaborazione
-input_dir = 'images/test/animals'
-output_dir = 'images/valid/animals'
+input_dir = config['inference']['animal']['input_dir']
+output_dir = config['inference']['animal']['output_dir']
 
-process_images(input_dir, output_dir, model, num_images=100)
+process_images(input_dir, output_dir, model, num_images=config['inference']['animal']['num_images'])

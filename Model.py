@@ -7,15 +7,21 @@ import torch.nn as nn
 import os
 import subprocess  # per automatizzazione di script in sequenza
 import matplotlib.pyplot as plt  # per il grafico delle loss
+import json
 
 """
 Model implementation for animals 
 """
+# Carica la configurazione dal file JSON
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+# Definizione del modello per animali
 class AnimalNetwork(nn.Module):
     def __init__(self):
         super(AnimalNetwork, self).__init__()
         self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        self.model.fc = nn.Linear(self.model.fc.in_features, 3)  # tre classi: bird, cat, dog
+        self.model.fc = nn.Linear(self.model.fc.in_features, config['training']['animal']['num_classes'])  # numero di classi dal JSON
 
     def forward(self, x):
         return self.model(x)
@@ -25,7 +31,7 @@ class PeopleNetwork(nn.Module):
     def __init__(self):
         super(PeopleNetwork, self).__init__()
         self.model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
-        self.model.fc = nn.Linear(self.model.fc.in_features, 2)  # due classi: male, female
+        self.model.fc = nn.Linear(self.model.fc.in_features, config['training']['people']['num_classes'])  # numero di classi dal JSON
 
     def forward(self, x):
         return self.model(x)

@@ -1,0 +1,93 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "training": {
+            "type": "object",
+            "properties": {
+                "animal": {
+                    "$ref": "#/definitions/trainingConfig"
+                },
+                "people": {
+                    "$ref": "#/definitions/trainingConfig"
+                }
+            },
+            "required": ["animal", "people"]
+        },
+        "inference": {
+            "type": "object",
+            "properties": {
+                "animal": {
+                    "$ref": "#/definitions/inferenceConfig"
+                },
+                "people": {
+                    "$ref": "#/definitions/inferenceConfigNoNumImages"
+                }
+            },
+            "required": ["animal", "people"]
+        },
+        "filters": {
+            "type": "object",
+            "properties": {
+                "animal": {
+                    "type": "object",
+                    "properties": {
+                        "dog": {"type": "string"},
+                        "cat": {"type": "string"},
+                        "bird": {"type": "string"}
+                    },
+                    "required": ["dog", "cat", "bird"]
+                },
+                "people": {
+                    "type": "object",
+                    "properties": {
+                        "male": {"type": "string"},
+                        "female": {"type": "string"}
+                    },
+                    "required": ["male", "female"]
+                }
+            },
+            "required": ["animal", "people"]
+        }
+    },
+    "required": ["training", "inference", "filters"],
+    "definitions": {
+        "trainingConfig": {
+            "type": "object",
+            "properties": {
+                "data_dir": {"type": "string"},
+                "model_name": {"type": "string"},
+                "num_classes": {"type": "integer"},
+                "epochs": {"type": "integer"},
+                "batch_size": {"type": "integer"},
+                "learning_rate": {"type": "number"},
+                "momentum": {"type": "number"},
+                "weight_decay": {"type": "number"},
+                "step_size": {"type": "integer"},
+                "gamma": {"type": "number"}
+            },
+            "required": [
+                "data_dir", "model_name", "num_classes", "epochs",
+                "batch_size", "learning_rate", "momentum", 
+                "weight_decay", "step_size", "gamma"
+            ]
+        },
+        "inferenceConfig": {
+            "type": "object",
+            "properties": {
+                "input_dir": {"type": "string"},
+                "output_dir": {"type": "string"},
+                "num_images": {"type": "integer"}
+            },
+            "required": ["input_dir", "output_dir", "num_images"]
+        },
+        "inferenceConfigNoNumImages": {
+            "type": "object",
+            "properties": {
+                "input_dir": {"type": "string"},
+                "output_dir": {"type": "string"}
+            },
+            "required": ["input_dir", "output_dir"]
+        }
+    }
+}

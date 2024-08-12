@@ -1,0 +1,66 @@
+{
+    "training": {
+        "animal": {
+            "data_dir": "images/train/animal",
+            "model_name": "animal_model.pth",
+            "num_classes": 3,
+            "epochs": 10,
+            "batch_size": 32,
+            "learning_rate": 0.01,
+            "momentum": 0.9,
+            "weight_decay": 0.0001,
+            "step_size": 7,
+            "gamma": 0.1
+        },
+        "people": {
+            "data_dir": "images/train/people",
+            "model_name": "people_model.pth",
+            "num_classes": 2,
+            "epochs": 10,
+            "batch_size": 32,
+            "learning_rate": 0.01,
+            "momentum": 0.9,
+            "weight_decay": 0.0001,
+            "step_size": 7,
+            "gamma": 0.1
+        }
+    },
+    "inference": {
+        "animal": {
+            "input_dir": "images/test/animals",
+            "output_dir": "images/valid/animals",
+            "num_images": 100
+        },
+        "people": {
+            "input_dir": "images/test/people",
+            "output_dir": "images/valid/people"
+        }
+    },
+    "filters": {
+        "animal": {
+            "dog": "flip",
+            "cat": "grayscale",
+            "bird": "invert"
+        },
+        "people": {
+            "male": "lightblue",
+            "female": "lightpink"
+        }
+    },
+    "paths": {
+        "model_paths": {
+            "people_model": "models/people_model.pth",
+            "animal_model": "models/animal_model.pth"
+        },
+        "image_dirs": {
+            "people": {
+                "input_dir": "images/test/people",
+                "output_dir": "images/valid/people"
+            },
+            "animals": {
+                "input_dir": "images/test/animals",
+                "output_dir": "images/valid/animals"
+            }
+        }
+    }
+}

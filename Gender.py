@@ -7,6 +7,7 @@ import os
 import pandas as pd
 import torchvision.models as models
 import matplotlib.pyplot as plt
+import json
 
 # Definizione del modello per persone
 class PeopleNetwork(nn.Module):
@@ -34,12 +35,17 @@ def get_transforms():
 
 transform = get_transforms()
 
+# Carica la configurazione dal file JSON
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
 # Funzione per applicare il filtro colorato
 def apply_color_filter(image, gender):
+    color_filters = config['filters']['people']
     if gender == 'male':
-        color_filter = Image.new('RGB', image.size, color='lightblue')
+        color_filter = Image.new('RGB', image.size, color=color_filters['male'])
     elif gender == 'female':
-        color_filter = Image.new('RGB', image.size, color='lightpink')
+        color_filter = Image.new('RGB', image.size, color=color_filters['female'])
     else:
         return image
 
@@ -114,6 +120,7 @@ def process_images(input_dir, output_dir, model):
     plt.show()
 
 # Esecuzione della funzione di elaborazione
-input_dir = 'images/test/people'
-output_dir = 'images/valid/people'
+input_dir = config['inference']['people']['input_dir']
+output_dir = config['inference']['people']['output_dir']
+
 process_images(input_dir, output_dir, model)

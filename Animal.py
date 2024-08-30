@@ -10,6 +10,23 @@ import matplotlib.pyplot as plt
 import random
 from PIL import ImageOps
 import json
+import jsonschema
+
+# Carica lo schema di configurazione
+with open('config_schema.json', 'r') as f:
+    config_schema = json.load(f)
+
+# Carica il file di configurazione
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+# Valida il file di configurazione rispetto allo schema
+try:
+    jsonschema.validate(instance=config, schema=config_schema)
+    print("Il file config.json è valido.")
+except jsonschema.exceptions.ValidationError as e:
+    print(f"Errore di validazione del file config.json: {e.message}")
+    exit(1)
 
 # Definizione del modello
 class AnimalNetwork(nn.Module):

@@ -8,6 +8,24 @@ import os
 import subprocess  # per automatizzazione di script in sequenza
 import matplotlib.pyplot as plt  # per il grafico delle loss
 import json
+import jsonschema
+
+# Carica lo schema di configurazione
+with open('config_schema.json', 'r') as f:
+    config_schema = json.load(f)
+
+# Carica il file di configurazione
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+# Valida il file di configurazione rispetto allo schema
+try:
+    jsonschema.validate(instance=config, schema=config_schema)
+    print("Il file config.json è valido.")
+except jsonschema.exceptions.ValidationError as e:
+    print(f"Errore di validazione del file config.json: {e.message}")
+    exit(1)
+
 
 """
 Model implementation for animals 
@@ -48,25 +66,25 @@ def get_transforms():
     ])
 
 # Funzione per addestrare e salvare un modello
-def train_and_save_model(model, data_dir, model_name, num_classes):
+def train_and_save_model(model, config):
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=config['learning_rate'], momentum=config['momentum'], weight_decay=config['weight_decay'])
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=config['step_size'], gamma=config['gamma'])
     
     train_transforms = get_transforms()
-    train_dataset = datasets.ImageFolder(root=data_dir, transform=train_transforms)
+    train_dataset = datasets.ImageFolder(root=config['data_dir'], transform=train_transforms)
     
     # Verifica il numero di classi nel dataset
-    if len(train_dataset.classes) != num_classes:
-        raise ValueError(f"Numero di classi nel dataset ({len(train_dataset.classes)}) non corrisponde al numero di classi del modello ({num_classes}).")
+    if len(train_dataset.classes) != config['num_classes']:
+        raise ValueError(f"Numero di classi nel dataset ({len(train_dataset.classes)}) non corrisponde al numero di classi del modello ({config['num_classes']}).")
 
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=config['batch_siz3'], shuffle=True)
 
-    print(f"Inizio dell'addestramento del modello {model_name}...")
+    print(f"Inizio dell'addestramento del modello {config['model_name']}...")
 
     losses = []  # Lista per memorizzare i valori di loss
 
-    for epoch in range(10):  # Numero di epoche
+    for epoch in range(config['epochs']):  # Numero di epoche
         running_loss = 0.0
         for images, labels in train_loader:
             optimizer.zero_grad()
@@ -82,16 +100,24 @@ def train_and_save_model(model, data_dir, model_name, num_classes):
         print(f"Epoch {epoch+1}, Loss: {epoch_loss}")
 
     # Salvataggio del modello
-    torch.save(model.state_dict(), model_name)
-    print(f"Modello salvato come '{model_name}'")
+    torch.save(model.state_dict(), config['model_name'])
+    print(f"Modello salvato come '{config['model_name']}'")
 
     return losses  # Restituisce la lista delle loss per ogni epoca
 
 if __name__ == "__main__":
     # Addestramento e salvataggio dei modelli
-    animal_losses = train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
-    people_losses = train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)
+    #animal_losses = train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
+    #people_losses = train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)
     
+
+     # Addestramento e salvataggio dei modelli
+    animal_config = config['training']['animal']
+    animal_losses = train_and_save_model(AnimalNetwork(), animal_config)
+
+    people_config = config['training']['people']
+    people_losses = train_and_save_model(PeopleNetwork(), people_config)
+
     # Creazione del grafico per le loss
     plt.figure(figsize=(10, 5))
     plt.plot(range(1, 11), animal_losses, label='AnimalNetwork Loss')

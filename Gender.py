@@ -8,6 +8,24 @@ import pandas as pd
 import torchvision.models as models
 import matplotlib.pyplot as plt
 import json
+import jsonschema
+
+# Carica lo schema di configurazione
+with open('config_schema.json', 'r') as f:
+    config_schema = json.load(f)
+
+# Carica il file di configurazione
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+# Valida il file di configurazione rispetto allo schema
+try:
+    jsonschema.validate(instance=config, schema=config_schema)
+    print("Il file config.json è valido.")
+except jsonschema.exceptions.ValidationError as e:
+    print(f"Errore di validazione del file config.json: {e.message}")
+    exit(1)
+
 
 # Definizione del modello per persone
 class PeopleNetwork(nn.Module):

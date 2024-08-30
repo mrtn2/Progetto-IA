@@ -107,11 +107,6 @@ def train_and_save_model(model, config):
 
 if __name__ == "__main__":
     # Addestramento e salvataggio dei modelli
-    #animal_losses = train_and_save_model(AnimalNetwork(), 'images/train/animal', 'animal_model.pth', 3)
-    #people_losses = train_and_save_model(PeopleNetwork(), 'images/train/people', 'people_model.pth', 2)
-    
-
-     # Addestramento e salvataggio dei modelli
     animal_config = config['training']['animal']
     animal_losses = train_and_save_model(AnimalNetwork(), animal_config)
 

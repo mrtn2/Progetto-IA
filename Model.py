@@ -83,6 +83,7 @@ def train_and_save_model(model, config):
     print(f"Inizio dell'addestramento del modello {config['model_name']}...")
 
     losses = []  # Lista per memorizzare i valori di loss
+    best_loss = float('inf')  # Inizializza la migliore loss con un valore molto alto
 
     for epoch in range(config['epochs']):  # Numero di epoche
         running_loss = 0.0
@@ -99,9 +100,18 @@ def train_and_save_model(model, config):
         losses.append(epoch_loss)
         print(f"Epoch {epoch+1}, Loss: {epoch_loss}")
 
-    # Salvataggio del modello
-    torch.save(model.state_dict(), config['model_name'])
-    print(f"Modello salvato come '{config['model_name']}'")
+        # Salvataggio del modello migliore
+        if epoch_loss < best_loss:
+            best_loss = epoch_loss
+            best_model_path = f"best_{config['model_name']}"
+            torch.save(model.state_dict(), best_model_path)
+            print(f"Modello migliorato e salvato in '{best_model_path}' con Loss: {best_loss:.4f}")
+
+
+    # Salvataggio del modello finale
+    final_model_path = config['model_name']
+    torch.save(model.state_dict(), final_model_path)
+    print(f"Modello salvato come '{final_model_path}")
 
     return losses  # Restituisce la lista delle loss per ogni epoca
 
@@ -115,8 +125,9 @@ if __name__ == "__main__":
 
     # Creazione del grafico per le loss
     plt.figure(figsize=(10, 5))
-    plt.plot(range(1, 11), animal_losses, label='AnimalNetwork Loss')
-    plt.plot(range(1, 11), people_losses, label='PeopleNetwork Loss')
+    epochs = range(1, animal_config['epochs'] + 1) # Adattato al numero di epoche
+    plt.plot(epochs, animal_losses, label='AnimalNetwork Loss')
+    plt.plot(epochs, people_losses, label='PeopleNetwork Loss')
     plt.xlabel('Epoca')
     plt.ylabel('Loss')
     plt.title('Andamento delle Loss durante le Epoche')

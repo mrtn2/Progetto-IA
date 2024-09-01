@@ -130,16 +130,26 @@ if __name__ == "__main__":
     people_config = config['training']['people']
     people_losses = train_and_save_model(PeopleNetwork(), people_config)
 
-    # Creazione del grafico per le loss
+    # Creazione del grafico per AnimalNetwork loss
     plt.figure(figsize=(10, 5))
-    epochs = range(1, animal_config['epochs'] + 1) # Adattato al numero di epoche
-    plt.plot(epochs, animal_losses, label='AnimalNetwork Loss')
-    plt.plot(epochs, people_losses, label='PeopleNetwork Loss')
+    animal_epochs = range(1,len(animal_losses) + 1)
+    plt.plot(animal_epochs, animal_losses, label='AnimalNetwork Loss', color='blue')
     plt.xlabel('Epoca')
     plt.ylabel('Loss')
-    plt.title('Andamento delle Loss durante le Epoche')
+    plt.title('Andamento della Loss per AnimalNetwork durante le Epoche')
     plt.legend()
-    plt.savefig('training_loss_plot.png')  # Salva il grafico come immagine
+    plt.savefig('animal_network_loss_plot.png')  # Salva il grafico come immagine
+    plt.show()  # Mostra il grafico
+
+    #Creazione grafico per PeopleNetwork loss
+    plt.figure(figsize=(10, 5))
+    people_epochs = range(1, len(people_losses) + 1)
+    plt.plot(people_epochs, people_losses, label='PeopleNetwork Loss', color='green')
+    plt.xlabel('Epoca')
+    plt.ylabel('Loss')
+    plt.title('Andamento della Loss per PeopleNetwork durante le Epoche')
+    plt.legend()
+    plt.savefig('people_network_loss_plot.png')  # Salva il grafico come immagine
     plt.show()  # Mostra il grafico
 
     # Esecuzione automatica dello script animal.py

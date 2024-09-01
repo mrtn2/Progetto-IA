@@ -64,7 +64,14 @@
                 "momentum": {"type": "number"},
                 "weight_decay": {"type": "number"},
                 "step_size": {"type": "integer"},
-                "gamma": {"type": "number"}
+                "gamma": {"type": "number"},
+                "early_stopping":{
+                    "type": "object",
+                    "properties": {
+                        "patience": {"type":"integer"}
+                    },
+                    "required": ["patience"]
+                }
             },
             "required": [
                 "data_dir", "model_name", "num_classes", "epochs",

@@ -78,12 +78,14 @@ def train_and_save_model(model, config):
     if len(train_dataset.classes) != config['num_classes']:
         raise ValueError(f"Numero di classi nel dataset ({len(train_dataset.classes)}) non corrisponde al numero di classi del modello ({config['num_classes']}).")
 
-    train_loader = DataLoader(train_dataset, batch_size=config['batch_siz3'], shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)
 
     print(f"Inizio dell'addestramento del modello {config['model_name']}...")
 
     losses = []  # Lista per memorizzare i valori di loss
     best_loss = float('inf')  # Inizializza la migliore loss con un valore molto alto
+    early_stop_counter = 0
+    patience = config['early_stopping']['patience']
 
     for epoch in range(config['epochs']):  # Numero di epoche
         running_loss = 0.0
@@ -103,9 +105,14 @@ def train_and_save_model(model, config):
         # Salvataggio del modello migliore
         if epoch_loss < best_loss:
             best_loss = epoch_loss
+            early_stop_counter = 0
             best_model_path = f"best_{config['model_name']}"
             torch.save(model.state_dict(), best_model_path)
             print(f"Modello migliorato e salvato in '{best_model_path}' con Loss: {best_loss:.4f}")
+        else:
+            early_stop_counter += 1
+            print(f"Early stopping attivato. Addestramento interrotto")
+            break
 
 
     # Salvataggio del modello finale
